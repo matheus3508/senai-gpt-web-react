@@ -1,0 +1,57 @@
+
+/* .titulo {
+
+    font-size: 76px;
+
+}
+
+#meutitulo {
+    font-size: 76px;
+}
+
+
+ */
+ .page-container{
+
+    display: flex;
+    
+
+ }
+
+
+
+ h1 {
+    font-size: 76px;
+    font-family: Inter;
+    font-weight: normal;
+    margin-bottom: 16px;
+
+}
+
+
+
+.login-container {
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 50vw;
+   
+}
+ .logo{
+
+    height: 60px;
+ }
+
+ 
+ .robo-image{
+
+    background-image: url(../assets/imgs/robo.png);
+    background-size: cover;
+
+    width: 50vw;
+    height: 100vh;
+ }
+
