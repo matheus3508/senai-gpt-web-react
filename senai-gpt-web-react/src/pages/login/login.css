@@ -47,10 +47,8 @@
 
  
  .robo-image{
-
-    background-image: url(../assets/imgs/robo.png);
+    background-image: url("../../assets/imgs/robo.png");
     background-size: cover;
-
     width: 50vw;
     height: 100vh;
  }
