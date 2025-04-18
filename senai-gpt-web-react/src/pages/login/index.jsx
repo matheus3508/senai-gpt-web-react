@@ -8,7 +8,7 @@ function Login() {
 
   const onLoginClick = async ()=> {
 
-    let response = await fetch("https://senai-gpt-api.azurewebsites.net/login", {
+    let response = await fetch ("https://senai-gpt-api.azurewebsites.net/login", {
 
       headers: {
         "Content-Type": "application/json"
@@ -21,7 +21,37 @@ function Login() {
 
     });
 
-    console.log(response)
+    console.log(response);
+
+    if (response.ok == true) {
+      alert('Login realizado com sucesso!');
+
+      let json = await response.json(); 
+
+      let token = json.accessToken;
+
+      console.log("Token " + token);
+
+      localStorage.setItem("meuToken", token);
+
+      //COOKIES
+
+      // function serCookie (name, value, days) {
+      //   const date = new Date();
+      //   date.seetTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); // dias => ms
+      //   const expires = "expires" + date.
+      // }
+      
+      window.location.href= "/chat";
+
+    } else {
+      if(response.status == 401) {
+        alert('Credenciais incorretas. Tente novamente')
+      }
+      else {
+        alert("Erro inesperado!")
+      }
+    }
 
   }
 
