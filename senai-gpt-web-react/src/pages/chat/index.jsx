@@ -16,36 +16,43 @@ function Chat() {
 
   const [chats, setChats] = useState([]);
 
-  setChats(json);
-
   useEffect(() => {
-    getChats();
+
+      // Executada toda vez que a tela abre.
+      getChats();
+
+
   }, []);
 
   const getChats = async () => {
+      // Arrow Function
+      let response = await fetch("https://senai-gpt-api.azurewebsites.net/chats", {
+          headers: {
+              "Authorization" : "Bearer " + localStorage.getItem("meuToken")
+          }
+      });
 
-    let response = await fetch("https://senai-gpt-api.azurewebsites.net/chats", {
-      headers: {
-        "Authorization": "Bearer" + localStorage.getItem("meuToken")
+      console.log(response);
+
+      if (response.ok == true) {
+
+          let json = await response.json(); // Pegue as informações dos chats.
+
+          setChats(json);
+
+      } else {
+
+          if (response.status == 401) {
+
+              alert("Token inválido. Faça login novamente.");
+              window.location.href = "/login";
+
+          }
+
       }
-    });
-    console.log(response);
-
-    if (response.ok == true) {
-      let json = await response.json();
-
-
-    } else {
-      if (response.statusc == 401) {
-
-        alert("Token invalido. Faça o login novamente.")
-        window.location.href = "/login"
-
-      }
-    }
-
 
   }
+
 
   return (
     <>
