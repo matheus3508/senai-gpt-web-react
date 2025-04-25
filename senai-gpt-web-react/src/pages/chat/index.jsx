@@ -147,12 +147,7 @@ function Chat() {
             </div>
           </div>
 
-          <div className="input-text">
-            <input className="input" type="text" placeholder="Type message" />
-            <img className="aviao" src={aviao} alt="Enviar" />
-            <img className="microfone" src={microfone} alt="Microfone" />
-            <img className="botaoimagem" src={botaoimagem} alt="Enviar Imagem" />
-          </div>
+          
               
               
               
@@ -161,7 +156,12 @@ function Chat() {
 
             )}
 
-          
+<div className="input-text">
+            <input className="input" type="text" placeholder="Type message" />
+            <img className="aviao" src={aviao} alt="Enviar" />
+            <img className="microfone" src={microfone} alt="Microfone" />
+            <img className="botaoimagem" src={botaoimagem} alt="Enviar Imagem" />
+          </div>
         </main>
       </div>
     </>
