@@ -15,6 +15,7 @@ function Chat() {
 
 
   const [chats, setChats] = useState([]);
+  const [chatSelecionado, setChatSelecionado] = useState(null);
 
   useEffect(() => {
 
@@ -45,6 +46,7 @@ function Chat() {
           if (response.status == 401) {
 
               alert("Token inválido. Faça login novamente.");
+              localStorage.clear();
               window.location.href = "/login";
 
           }
@@ -52,6 +54,20 @@ function Chat() {
       }
 
   }
+
+  const onLogOutClik = () => {
+
+      localStorage.clear();
+      window.location.href = "/login";
+
+  }
+  
+  const clickChat = (chat) => {
+
+    setChatSelecionado(chat);
+    console.log(chat);
+  }
+  
 
 
   return (
@@ -62,7 +78,7 @@ function Chat() {
             <button className="btn-new-chat">+ New Chat</button>
 
             {chats.map(chat => (
-              <button className="btn-chat">
+              <button className="btn-chat" onClick={() => clickChat(chat)}>
                 <img src={btn} alt="" />
                 {chat.chatTitle}
               </button>
@@ -76,12 +92,17 @@ function Chat() {
             <button className="btn">Light mode</button>
             <button className="btn">My Account</button>
             <button className="btn">Updates & FAQ</button>
-            <button className="btn">Log out</button>
+            <button className="btn" onClick={() => onLogOutClik()}>Log out</button>
           </div>
         </header>
 
         <main className="painel-central">
-          <img className="senai" src={logo} alt="Logo do SenaiGPT" />
+
+            {chatSelecionado == null &&(
+
+              <>
+              
+              <img className="senai" src={logo} alt="Logo do SenaiGPT" />
           <div className="div-principal-text">
             <div className="exemples">
               <h3>
@@ -132,6 +153,15 @@ function Chat() {
             <img className="microfone" src={microfone} alt="Microfone" />
             <img className="botaoimagem" src={botaoimagem} alt="Enviar Imagem" />
           </div>
+              
+              
+              
+              </>
+
+
+            )}
+
+          
         </main>
       </div>
     </>
