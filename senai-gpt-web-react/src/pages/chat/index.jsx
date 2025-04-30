@@ -8,13 +8,11 @@ import imageIcon from "../../assets/imgs/example.svg";
 import { useEffect, useState } from "react";
 
 function Chat() {
-
     const [chats, setChats] = useState([]);
     const [chatSelecionado, setChatSelecionado] = useState(null);
     const [userMessage, setUserMessage] = useState("");
 
     useEffect(() => {
-       
         getChats();
     }, []);
 
@@ -26,23 +24,42 @@ function Chat() {
         });
 
         if (response.ok) {
-            let json = await response.json(); 
+            let json = await response.json();
             setChats(json);
         } else if (response.status === 401) {
             alert("Token inválido. Faça login novamente.");
             localStorage.clear();
             window.location.href = "/login";
         }
-    }
+    };
 
     const onLogOutClick = () => {
         localStorage.clear();
         window.location.href = "/login";
-    }
+    };
 
     const clickChat = (chat) => {
         setChatSelecionado(chat);
-    }
+    };
+
+    const deletarChat = async (chatId) => {
+        const confirmacao = window.confirm("Deseja realmente excluir este chat?");
+        if (!confirmacao) return;
+
+        let response = await fetch(`https://senai-gpt-api.azurewebsites.net/chats/${chatId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("meuToken")
+            }
+        });
+
+        if (response.ok) {
+            setChatSelecionado(null);
+            await getChats();
+        } else {
+            alert("Erro ao excluir o chat.");
+        }
+    };
 
     const chatGPT = async (message) => {
         const endpoint = "https://ai-testenpl826117277026.openai.azure.com/";
@@ -71,10 +88,9 @@ function Chat() {
             const result = await response.json();
             return result.choices[0].message.content;
         }
-    }
+    };
 
     const enviarMensagem = async (message) => {
-       
         let chatAtual = { ...chatSelecionado };
 
         if (!chatSelecionado) {
@@ -89,12 +105,10 @@ function Chat() {
             id: userId
         };
 
-        
         let novoChatSelecionado = { ...chatAtual };
         novoChatSelecionado.messages.push(novaMensagemUsuario);
         setChatSelecionado(novoChatSelecionado);
 
-        
         let resposta = await chatGPT(message);
 
         let novaRespostaChatGPT = {
@@ -106,7 +120,6 @@ function Chat() {
         novoChatSelecionado.messages.push(novaRespostaChatGPT);
         setChatSelecionado({ ...novoChatSelecionado });
 
-        
         let response = await fetch(
             `https://senai-gpt-api.azurewebsites.net/chats/${chatAtual.id}`,
             {
@@ -127,7 +140,7 @@ function Chat() {
 
         setUserMessage("");
         await getChats();
-    }
+    };
 
     const novoChat = async () => {
         let nomeChat = prompt("Digite o nome do novo chat:");
@@ -162,7 +175,7 @@ function Chat() {
         } else {
             console.log("Erro ao criar o chat.");
         }
-    }
+    };
 
     return (
         <>
@@ -178,7 +191,19 @@ function Chat() {
                         ))}
                     </div>
                     <div className="bottom">
-                        <button className="btn-chat">Clear conversations</button>
+                        <button
+                            className="btn-chat"
+                            onClick={async () => {
+                                if (chatSelecionado) {
+                                    await deletarChat(chatSelecionado.id);
+                                    setChatSelecionado(null); // redireciona visualmente
+                                } else {
+                                    alert("Nenhum chat selecionado.");
+                                }
+                            }}
+                        >
+                            Clear conversations
+                        </button>
                         <button className="btn-chat">Light mode</button>
                         <button className="btn-chat">My account</button>
                         <button className="btn-chat">Updates & FAQ</button>
