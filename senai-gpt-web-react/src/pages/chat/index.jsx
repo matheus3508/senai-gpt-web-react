@@ -1,174 +1,239 @@
 import "./chat.css";
-import btn from "../../assets/imgs/chat.svg";
-// import btnc from "../../assets/imgs/chat.svg";
-// import btnchat from "../../assets/imgs/chat.svg";
 import logo from "../../assets/imgs/Chat.png";
-import exemplos from "../../assets/imgs/exem.jpg";
-import exempless from "../../assets/imgs/Vector.svg";
-import exemples from "../../assets/imgs/img3.svg";
-import aviao from "../../assets/imgs/IconSet (1).png";
-import microfone from "../../assets/imgs/IconSet.png";
-import botaoimagem from "../../assets/imgs/button.png";
+import example from "../../assets/imgs/chat.svg";
+import chatIcon from "../../assets/imgs/chat.svg";
+import sendIcon from "../../assets/imgs/img3.svg";
+import micIcon from "../../assets/imgs/iconSet.png";
+import imageIcon from "../../assets/imgs/vector.svg";
 import { useEffect, useState } from "react";
 
 function Chat() {
 
+    const [chats, setChats] = useState([]);
+    const [chatSelecionado, setChatSelecionado] = useState(null);
+    const [userMessage, setUserMessage] = useState("");
 
-  const [chats, setChats] = useState([]);
-  const [chatSelecionado, setChatSelecionado] = useState(null);
+    useEffect(() => {
+        // Executada toda vez que a tela abre.
+        getChats();
+    }, []);
 
-  useEffect(() => {
+    const getChats = async () => {
+        let response = await fetch("https://senai-gpt-api.azurewebsites.net/chats", {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("meuToken")
+            }
+        });
 
-      // Executada toda vez que a tela abre.
-      getChats();
+        if (response.ok) {
+            let json = await response.json(); // Pegue as informações dos chats.
+            setChats(json);
+        } else if (response.status === 401) {
+            alert("Token inválido. Faça login novamente.");
+            localStorage.clear();
+            window.location.href = "/login";
+        }
+    }
 
+    const onLogOutClick = () => {
+        localStorage.clear();
+        window.location.href = "/login";
+    }
 
-  }, []);
+    const clickChat = (chat) => {
+        setChatSelecionado(chat);
+    }
 
-  const getChats = async () => {
-      // Arrow Function
-      let response = await fetch("https://senai-gpt-api.azurewebsites.net/chats", {
-          headers: {
-              "Authorization" : "Bearer " + localStorage.getItem("meuToken")
-          }
-      });
+    const chatGPT = async (message) => {
+        const endpoint = "https://ai-testenpl826117277026.openai.azure.com/";
+        const apiKey = "DCYQGY3kPmZXr0lh7xeCSEOQ5oiy1aMlN1GeEQd5G5cXjuLWorWOJQQJ99BCACYeBjFXJ3w3AAAAACOGol8N";
+        const deploymentId = "gpt-4";
+        const apiVersion = "2024-05-01-preview";
+        const url = `${endpoint}/openai/deployments/${deploymentId}/chat/completions?api-version=${apiVersion}`;
 
-      console.log(response);
+        const data = {
+            messages: [{ role: "user", content: message }],
+            max_tokens: 50
+        };
 
-      if (response.ok == true) {
+        const headers = {
+            "Content-Type": "application/json",
+            "api-key": apiKey
+        };
 
-          let json = await response.json(); // Pegue as informações dos chats.
+        const response = await fetch(url, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(data)
+        });
 
-          setChats(json);
+        if (response.ok) {
+            const result = await response.json();
+            return result.choices[0].message.content;
+        }
+    }
 
-      } else {
+    const enviarMensagem = async (message) => {
+        // Se não houver chat selecionado, cria um novo chat antes de enviar a mensagem
+        let chatAtual = { ...chatSelecionado };
 
-          if (response.status == 401) {
+        if (!chatSelecionado) {
+            chatAtual = await novoChat();
+        }
 
-              alert("Token inválido. Faça login novamente.");
-              localStorage.clear();
-              window.location.href = "/login";
+        let userId = localStorage.getItem("meuId");
 
-          }
+        let novaMensagemUsuario = {
+            userId: crypto.randomUUID(),
+            text: message,
+            id: userId
+        };
 
-      }
+        // Atualiza cópia do chat selecionado
+        let novoChatSelecionado = { ...chatAtual };
+        novoChatSelecionado.messages.push(novaMensagemUsuario);
+        setChatSelecionado(novoChatSelecionado);
 
-  }
+        // Envia ao ChatGPT e recebe resposta
+        let resposta = await chatGPT(message);
 
-  const onLogOutClik = () => {
+        let novaRespostaChatGPT = {
+            userId: "chatbot",
+            text: resposta,
+            id: crypto.randomUUID()
+        };
 
-      localStorage.clear();
-      window.location.href = "/login";
+        novoChatSelecionado.messages.push(novaRespostaChatGPT);
+        setChatSelecionado({ ...novoChatSelecionado });
 
-  }
-  
-  const clickChat = (chat) => {
+        // Salva o chat atualizado no back-end
+        let response = await fetch(
+            `https://senai-gpt-api.azurewebsites.net/chats/${chatAtual.id}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("meuToken")
+                },
+                body: JSON.stringify(novoChatSelecionado)
+            }
+        );
 
-    setChatSelecionado(chat);
-    console.log(chat);
-  }
-  
+        if (response.ok) {
+            console.log("Chat atualizado com sucesso.");
+        } else {
+            console.log("Erro ao atualizar o chat.");
+        }
 
+        setUserMessage("");
+        await getChats();
+    }
 
-  return (
-    <>
-      <div className="container">
-        <header className="left-painel">
-          <div className="top">
-            <button className="btn-new-chat">+ New Chat</button>
+    const novoChat = async () => {
+        let nomeChat = prompt("Digite o nome do novo chat:");
+        if (!nomeChat) {
+            alert("Nome inválido.");
+            return;
+        }
 
-            {chats.map(chat => (
-              <button className="btn-chat" onClick={() => clickChat(chat)}>
-                <img src={btn} alt="" />
-                {chat.chatTitle}
-              </button>
-            ))}
+        let userId = localStorage.getItem("meuId");
+        let novoChatObj = {
+            id: crypto.randomUUID(),
+            chatTitle: nomeChat,
+            messages: [],
+            userId
+        };
 
+        setChatSelecionado(novoChatObj);
+        setUserMessage("");
 
-          </div>
+        let response = await fetch("https://senai-gpt-api.azurewebsites.net/chats", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("meuToken")
+            },
+            body: JSON.stringify(novoChatObj)
+        });
 
-          <div className="bottom">
-            <button className="btn">Clear Conversations</button>
-            <button className="btn">Light mode</button>
-            <button className="btn">My Account</button>
-            <button className="btn">Updates & FAQ</button>
-            <button className="btn" onClick={() => onLogOutClik()}>Log out</button>
-          </div>
-        </header>
+        if (response.ok) {
+            await getChats();
+            return novoChatObj;
+        } else {
+            console.log("Erro ao criar o chat.");
+        }
+    }
 
-        <main className="painel-central">
-
-            {chatSelecionado == null &&(
-
-              <>
-              
-              <img className="senai" src={logo} alt="Logo do SenaiGPT" />
-          <div className="div-principal-text">
-            <div className="exemples">
-              <h3>
-                <img src={exemples} alt="" />
-                Examples
-              </h3>
-              <br />
-              <p>"Explain quantum computing in simple <br /> terms"</p>
-              <br />
-              <p>"Got any creative ideas for a 10-year <br /> old's birthday?"</p>
-              <br />
-              <p>"How do I make an HTTP request in <br /> JavaScript?"</p>
-              <br />
+    return (
+        <>
+            <div className="container">
+                <header className="left-panel">
+                    <div className="top">
+                        <button className="btn-new-chat" onClick={() => novoChat()}>+ New chat</button>
+                        {chats.map(chat => (
+                            <button key={chat.id} className="btn-chat" onClick={() => clickChat(chat)}>
+                                <img src={chatIcon} alt="ícone de chat." />
+                                {chat.chatTitle}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="bottom">
+                        <button className="btn-chat" onClick={onLogOutClick}>Clear conversations</button>
+                        <button className="btn-chat">Light mode</button>
+                        <button className="btn-chat">My account</button>
+                        <button className="btn-chat">Updates & FAQ</button>
+                        <button className="btn-chat">Log out</button>
+                    </div>
+                </header>
+                <main className="central-panel">
+                    {chatSelecionado == null ? (
+                        <>
+                            <div className="chat-logo">
+                                <img src={logo} alt="Logo do SenaiGPT." />
+                            </div>
+                            <div className="dicas-container">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="dicas-item">
+                                        <h2>
+                                            <img src={example} alt="Example icon." />
+                                            Examples
+                                        </h2>
+                                        <p>Explique como um computador quântico funciona.</p>
+                                        <p>Explique como um computador quântico funciona.</p>
+                                        <p>Explique como um computador quântico funciona.</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="chat-container">
+                                <div className="chat-header">
+                                    <h2>{chatSelecionado.chatTitle}</h2>
+                                </div>
+                                <div className="chat-messages">
+                                    {chatSelecionado.messages.map(message => (
+                                        <p key={message.id} className={`message-item ${message.userId === "chatbot" ? "chatbot" : ""}`}>{message.text}</p>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                    <div className="input-container-1">
+                        <img src={micIcon} alt="Microphone." />
+                        <img src={imageIcon} alt="Image." />
+                        <input
+                            value={userMessage}
+                            onChange={event => setUserMessage(event.target.value)}
+                            placeholder="Type a message."
+                            type="text"
+                        />
+                        <img onClick={() => enviarMensagem(userMessage)} src={sendIcon} alt="Send." />
+                    </div>
+                </main>
             </div>
-
-            <div className="capacibilities">
-              <h3>
-                <img src={exempless} alt="" />
-                Capacibilities
-              </h3>
-              <br />
-              <p>Remembers what user said earlier in <br /> the conversation.</p>
-              <br />
-              <p>Allows user to provide follow-up <br /> corrections.</p>
-
-              <br />
-              <p>Trained to decline inappropriate <br /> requests.</p>
-              <br />
-            </div>
-
-            <div className="limitations">
-              <h3>
-                <img src={exemplos} alt="" />
-                Limitations
-              </h3>
-              <br />
-              <p>May occasionally generate incorrect <br /> information.</p>
-              <br />
-              <p>May occasionally produce harmful <br /> instructions or biased content.</p>
-              <br />
-              <p>Limited knowledge of world and <br /> events after 2021.</p>
-            </div>
-          </div>
-
-          
-              
-              
-              
-              </>
-
-
-            )}
-
-<div className="input-text">
-            <input className="input" type="text" placeholder="Type message" />
-            <img className="aviao" src={aviao} alt="Enviar" />
-            <img className="microfone" src={microfone} alt="Microfone" />
-            <img className="botaoimagem" src={botaoimagem} alt="Enviar Imagem" />
-          </div>
-        </main>
-      </div>
-    </>
-
-
-  )
-
-
+        </>
+    );
 };
+
 export default Chat;
