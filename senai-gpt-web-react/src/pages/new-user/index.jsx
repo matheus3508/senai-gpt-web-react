@@ -1,4 +1,4 @@
-import "./style.css";
+import "./new-user.css";
 import logo from "../../assets/imgs/Chat.png";
 import { useState } from "react";
 

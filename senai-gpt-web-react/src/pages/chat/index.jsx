@@ -17,7 +17,7 @@ function Chat() {
     }, []);
 
     const getChats = async () => {
-        let response = await fetch("https://senai-gpt-api.azurewebsites.net/chats", {
+        let response = await fetch("https://senai-gpt-api.up.railway.app/users", {
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("meuToken")
             }
@@ -25,6 +25,12 @@ function Chat() {
 
         if (response.ok) {
             let json = await response.json();
+            setChats(json);
+
+            let userId = localStorage.getItem("meuId");
+
+            json = json.filter(chat => chat.userId == userId);
+
             setChats(json);
         } else if (response.status === 401) {
             alert("Token inválido. Faça login novamente.");
@@ -46,7 +52,7 @@ function Chat() {
         const confirmacao = window.confirm("Deseja realmente excluir este chat?");
         if (!confirmacao) return;
 
-        let response = await fetch(`https://senai-gpt-api.azurewebsites.net/chats/${chatId}`, {
+        let response = await fetch(`https://senai-gpt-api.up.railway.app/users${chatId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("meuToken")
@@ -65,7 +71,7 @@ function Chat() {
 
         return "[Mensagem fixa]";
 
-        const endpoint = "https://ai-testenpl826117277026.openai.azure.com/";
+        const endpoint = "https://se";
         const apiKey = "DCYQGY3kPmZXr0lh7xeCSEOQ5oiy1aMlN1GeEQd5G5cXjuLWorWOJQQJ99BCACYeBjFXJ3w3AAAAACOGol8N";
         const deploymentId = "gpt-4";
         const apiVersion = "2024-05-01-preview";
@@ -124,7 +130,7 @@ function Chat() {
         setChatSelecionado({ ...novoChatSelecionado });
 
         let response = await fetch(
-            `https://senai-gpt-api.azurewebsites.net/chats/${chatAtual.id}`,
+            `https://senai-gpt-api.up.railway.app/users${chatAtual.id}`,
             {
                 method: "PUT",
                 headers: {
