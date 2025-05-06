@@ -52,3 +52,29 @@ h1 {
     height: 100vh;
 
 }
+
+@media screen and (max-width: 1366px) {
+
+/* desktop pqno */
+
+}
+
+@media screen and (max-width: 1000px) {
+
+    /* tablet */
+    
+}
+
+@media screen and (max-width: 768px) {
+
+    /* celular */
+
+    .robo-image{
+        display: none;
+    }
+    
+    .login-container{
+        width: 100vw;
+        background-size: cover;
+    }
+    }
