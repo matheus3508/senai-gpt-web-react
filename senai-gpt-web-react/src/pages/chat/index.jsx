@@ -48,7 +48,7 @@ function Chat() {
 
     const clickChat = (chat) => {
         setChatSelecionado(chat);
-    };
+        setIsLeftPanelOpen(false);}
 
     const deletarChat = async (chatId) => {
         const confirmacao = window.confirm("Deseja realmente excluir este chat?");
@@ -192,7 +192,7 @@ function Chat() {
         <>
             <div className="container">
                 <button className="btn-toggle-panel"
-                 onClick={() => setIsLeftPanelOpen (true)}
+                 onClick={() => setIsLeftPanelOpen (!isLeftPanelOpen)}
                  >
                 ☰
                 </button>
